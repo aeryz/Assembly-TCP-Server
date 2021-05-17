@@ -1,0 +1,2 @@
+%define SYSCALL_BASE 0x2000000
+
