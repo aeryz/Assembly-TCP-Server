@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <unistd.h>
 #include <time.h>
+#include <unistd.h>
 #define PORT 4444
 
 int main(int argc, char const *argv[]) {

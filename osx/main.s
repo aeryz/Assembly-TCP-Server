@@ -12,32 +12,22 @@ resb 1024
 section .text
 
 echo:
-    push rbp
-    mov rbp, rsp
-
-    mov rax, SYSCALL_BASE + 3
+    mov rax, SYSCALL(READ)
     mov rsi, buffer
     mov rdx, 1024
     syscall
 
-    mov rax, SYSCALL_BASE + 4
+    mov rax, SYSCALL(WRITE)
     mov rsi, buffer
     mov rdx, 1024
     syscall
 
-    mov rsp, rbp
-    pop rbp
     ret
 
 close_connection:
-    push rbp
-    mov rbp, rsp
-
-    mov rax, SYSCALL_BASE + 6
+    mov rax, SYSCALL(CLOSE)
     syscall
 
-    mov rsp, rbp
-    pop rbp
     ret
 
 accept_loop:
@@ -62,6 +52,7 @@ accept_loop:
 
 
 _main:
+    and rsp, 0xFFFFFFFFFFFFFF00
     call socket_listen
 
     mov rdi, rax
