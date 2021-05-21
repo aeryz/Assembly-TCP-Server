@@ -8,6 +8,7 @@ global socket_listen
 global socket_accept
 
 extern h_strlen
+extern h_memset
 
 section .text
 
@@ -22,18 +23,20 @@ htons:
     mov al, dl
 
     ret
-    
 
 socket_listen:
     ; Save the stack's base pointer.
     push rbp
     mov rbp, rsp 
+    push rbx
     ; 16-byte aligned stack:
-    ;    0x8: 'call' instruction pushes the return address,
-    ;    0x8: saved 'rbp',
+    ;    0x8:  'call' instruction pushes the return address,
+    ;    0x8:  saved 'rbp',
+    ;    0x8:  saved 'rbx'
     ;    0x10: reserved for local variable,
+    ;    0x8:  padding,
     ;    Total of 32 bytes.
-    sub rsp, 0x10
+    sub rsp, 0x18
 
     ; socket(rdi: AF_INET, rsi: SOCK_STREAM, rdx: 0)
     mov rax, SYSCALL(SOCKET)
@@ -54,12 +57,16 @@ socket_listen:
     mov di, 4444
     call htons
 
+    mov QWORD [rsp + 0x10], rax
+
     ; memset(rdi: struct sockaddr*, rsi: x, rdx: sizeof(struct sockaddr))
     ;    Initialize 'struct sockaddr' variable with 'x'.
     lea rdi, [rsp]
     mov rsi, 0
     mov rdx, 0x10
-    call memset
+    call h_memset
+
+    mov rax, QWORD [rsp + 0x10]
 
     ; struct sockaddr_in addr;
     ; memset(&addr, 0, sizeof(addr));
@@ -115,22 +122,25 @@ socket_listen:
 
     mov rax, -1
 .ret:
-    ; Properly return from the function.
+    ; Restore rbx
+    mov rbx, QWORD [rsp + 0x18]
+    ; Properly return from the function
     mov rsp, rbp
     pop rbp
     ret
 
 socket_accept:
     push rbp
-    mov rbp, rsp
-    sub rsp, 0x10 
+    mov rbp, rsp 
+    push rbx
+    sub rsp, 0x18
 
     ; accept(rdi: socket, rsi: output addr, rdx: addr len);
     ;    This blocks until a new connection is establishes and returns
     ;    a new socket descriptor for the connection.
     mov rax, SYSCALL(ACCEPT)
     lea rsi, [rsp + 0x4]
-    lea rdx, [rsp]
+    mov rdx, rsp
     syscall
 
     cmp rax, 0
@@ -138,8 +148,8 @@ socket_accept:
 
     mov rdi, ACCEPT_FAILED
     call h_strlen
-    mov rbx, rax
 
+    mov rbx, rax
     mov rax, SYSCALL(WRITE)
     mov rsi, ACCEPT_FAILED
     mov rdi, STDOUT
@@ -149,6 +159,7 @@ socket_accept:
     mov rax, -1
     jmp .ret
 .ret:
+    mov rbx, QWORD [rsp + 0x18]
     mov rsp, rbp
     pop rbp
     ret

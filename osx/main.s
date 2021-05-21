@@ -2,6 +2,7 @@
 
 extern socket_listen
 extern socket_accept
+extern h_memset
 
 global _main
 
@@ -12,6 +13,11 @@ resb 1024
 section .text
 
 echo:
+    push rbp
+    mov rbp, rsp
+    sub rsp, 0xF
+    push rbx
+
     ; Save the socket descriptor.
     mov rbx, rdi
 
@@ -20,7 +26,7 @@ echo:
     mov rsi, 0
     mov rdx, 1024
     call h_memset
-    
+
     ; read(rdi: socketfd, rsi: buffer, rdx: len(buffer))
     ;    Read max. 1024 characters to buffer. 
     mov rax, SYSCALL(READ)
@@ -29,26 +35,20 @@ echo:
     mov rdx, 1024
     syscall
 
-    cmp rax, 0
-    jle .read_failed
-
     ; write(rdi: socketfd, rsi: buffer, rdx: len(buffer))
     ;    Write 
+    mov rdx, rax
     mov rax, SYSCALL(WRITE)
     mov rsi, buffer
-    mov rdx, rax
     syscall
 
+    cmp rax, 0
     jmp .ret
 
-.read_failed:
-    mov rbx, rax
-
-    mov rdi, READ_FAILED
-    call h_strlen
-
-    
 .ret:
+    pop rbx
+    mov rsp, rbp
+    pop rbp
     ret
 
 close_connection:
@@ -60,7 +60,7 @@ close_connection:
 accept_loop:
     push rbp
     mov rbp, rsp
-
+    sub rsp, 0x8 ; for stack alignment
 .accept_loop:
     push rdi
     call socket_accept
@@ -81,15 +81,10 @@ extern h_strlen
 
 
 _main:
-    mov rdi, HELO
-    call h_strlen
-    jmp .ret
-
     and rsp, 0xFFFFFFFFFFFFFF00
     call socket_listen
 
     mov rdi, rax
-
     call accept_loop
 
 .ret:
@@ -97,5 +92,5 @@ _main:
     mov rdi, 0
     syscall
 
-HELO:
-db "hello world", 0x10, 0x0
+READ_FAILED:
+db "read() failed", 0x10, 0x0

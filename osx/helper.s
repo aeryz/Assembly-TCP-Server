@@ -7,6 +7,7 @@ section .text
 ;    loop until '\0' is seen and return length of 'str'
 h_strlen:
     push rdi
+    push rbx
     mov rbx, rdi
     xor rax, rax
     xor rcx, rcx
@@ -14,6 +15,7 @@ h_strlen:
     repne scasb
     sub rax, 2
     sub rax, rcx
+    pop rbx
     pop rdi
     ret
     
