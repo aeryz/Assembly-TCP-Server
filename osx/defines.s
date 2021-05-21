@@ -10,9 +10,7 @@
     %define BIND 104
     %define SETSOCKOPT 105
     %define LISTEN 106
-%endif
-
-%ifdef PLATFORM_LINUX
+%elifdef PLATFORM_LINUX
     %define SYSCALL_BASE 0
     %define EXIT 60
     %define READ 0

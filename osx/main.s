@@ -4,7 +4,11 @@ extern socket_listen
 extern socket_accept
 extern h_memset
 
+%ifdef PLATFORM_OSX
+global _main
+%elifdef PLATFORM_LINUX
 global main
+%endif
 
 section .bss
 buffer:
@@ -76,8 +80,11 @@ accept_loop:
 
 extern h_strlen
 
-
+%ifdef PLATFORM_OSX
+_main:
+%elifdef PLATFORM_LINUX
 main:
+%endif
     and rsp, 0xFFFFFFFFFFFFFF00
     call socket_listen
 
