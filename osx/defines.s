@@ -12,6 +12,19 @@
     %define LISTEN 106
 %endif
 
+%ifdef PLATFORM_LINUX
+    %define SYSCALL_BASE 0
+    %define EXIT 60
+    %define READ 0
+    %define WRITE 1
+    %define CLOSE 3
+    %define ACCEPT 43
+    %define SOCKET 41
+    %define BIND 49
+    %define SETSOCKOPT 54
+    %define LISTEN 50
+%endif
+
 %define STDOUT 1
 
 %define SYSCALL(NUM) (SYSCALL_BASE + NUM)

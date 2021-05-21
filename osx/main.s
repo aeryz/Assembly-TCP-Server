@@ -4,7 +4,7 @@ extern socket_listen
 extern socket_accept
 extern h_memset
 
-global _main
+global main
 
 section .bss
 buffer:
@@ -15,8 +15,8 @@ section .text
 echo:
     push rbp
     mov rbp, rsp
-    sub rsp, 0xF
     push rbx
+    sub rsp, 0x8
 
     ; Save the socket descriptor.
     mov rbx, rdi
@@ -42,11 +42,7 @@ echo:
     mov rsi, buffer
     syscall
 
-    cmp rax, 0
-    jmp .ret
-
-.ret:
-    pop rbx
+    mov rbx, QWORD [rsp + 0x8]
     mov rsp, rbp
     pop rbp
     ret
@@ -60,16 +56,17 @@ close_connection:
 accept_loop:
     push rbp
     mov rbp, rsp
-    sub rsp, 0x8 ; for stack alignment
 .accept_loop:
-    push rdi
+	push rdi
     call socket_accept
     cmp rax, 0
     jl .ret
     mov rdi, rax
+	mov rbx, rax
     call echo
+	mov rdi, rbx
     call close_connection
-    pop rdi
+	pop rdi
     jmp .accept_loop
 
 .ret:
@@ -80,7 +77,7 @@ accept_loop:
 extern h_strlen
 
 
-_main:
+main:
     and rsp, 0xFFFFFFFFFFFFFF00
     call socket_listen
 

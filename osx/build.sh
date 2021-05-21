@@ -1,3 +1,4 @@
+#!/bin/bash
 
 FILES=(helper socket main)
 

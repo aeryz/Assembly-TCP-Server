@@ -73,7 +73,11 @@ socket_listen:
     ; addr.sin_family = AF_INET;
     ; addr.sin_addr.s_addr = INADDR_ANY;
     ; addr.sin_port = htons(PORT);
-    mov byte [rsp+0x1], AF_INET
+%ifdef PLATFORM_LINUX
+	mov word [rsp+0x0], AF_INET
+%elifdef PLATFORM_OSX
+	mov byte [rsp+0x1], AF_INET
+%endif
     mov word [rsp+0x2], ax
     mov dword[rsp+0x4], INADDR_ANY
 
