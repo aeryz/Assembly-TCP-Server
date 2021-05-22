@@ -61,7 +61,7 @@ socket_listen:
 
     ; memset(rdi: struct sockaddr*, rsi: x, rdx: sizeof(struct sockaddr))
     ;    Initialize 'struct sockaddr' variable with 'x'.
-    lea rdi, [rsp]
+    mov rdi, rsp
     mov rsi, 0
     mov rdx, 0x10
     call h_memset
@@ -84,7 +84,7 @@ socket_listen:
     ; bind(rdi: socket, rsi: addr, rdx: sizeof(addr))
     mov rax, SYSCALL(BIND)
     mov rdi, rbx
-    lea rsi, [rsp]
+    mov rsi, rsp
     mov rdx, 0x10
     syscall
 
